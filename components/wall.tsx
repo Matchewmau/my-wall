@@ -43,6 +43,33 @@ export function Wall({
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel("wall-posts")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "posts" },
+        (payload) => {
+          const row = payload.new as PostRow;
+          setLivePosts((previous) =>
+            prependLivePost(previous, mapPostRow(row, profile.name)),
+          );
+        },
+      )
+      .subscribe((status, subscribeError) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.error("Realtime subscription error", subscribeError);
+        }
+      });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, []);
+
   async function retry() {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
