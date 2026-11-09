@@ -1,3 +1,4 @@
+import { ImageLightbox } from "@/components/image-lightbox";
 import type { WallPost } from "@/lib/types";
 import { timeAgo } from "@/lib/time";
 
@@ -20,13 +21,10 @@ export function PostItem({ post, now }: { post: WallPost; now: number }) {
         </p>
       ) : null}
       {post.photo_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <ImageLightbox
           src={post.photo_url}
           alt={`Photo shared by ${post.author}`}
-          loading="lazy"
-          decoding="async"
-          className="mt-3 max-h-[400px] w-full rounded-lg object-cover"
+          triggerLabel={`View full size photo shared by ${post.author}`}
         />
       ) : null}
     </article>
