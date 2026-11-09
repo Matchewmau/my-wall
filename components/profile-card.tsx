@@ -22,7 +22,7 @@ export function ProfileCard() {
         </div>
         <div className="min-w-0 md:mt-3">
           <h1 className="text-xl font-bold md:text-2xl">{profile.name}</h1>
-          <p className="text-sm text-[#65676b]">wall</p>
+          <p className="text-sm text-[#65676b]">Application Test</p>
         </div>
       </div>
 
