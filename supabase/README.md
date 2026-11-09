@@ -40,11 +40,16 @@ Run these from the repository root:
 
 ```powershell
 node --env-file=.env.local -e "const u=process.env.NEXT_PUBLIC_SUPABASE_URL,k=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; fetch(u+'/rest/v1/posts?select=id&limit=1',{headers:{apikey:k,Authorization:'Bearer '+k}}).then(async r=>console.log(r.status, await r.text()))"
-node --env-file=.env.local -e "const u=process.env.NEXT_PUBLIC_SUPABASE_URL,k=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; fetch(u+'/storage/v1/bucket',{headers:{apikey:k,Authorization:'Bearer '+k}}).then(r=>r.json()).then(b=>console.log(b.map(x=>x.id)))"
+node --env-file=.env.local -e "const u=process.env.NEXT_PUBLIC_SUPABASE_URL,k=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; const n='healthcheck-'+Date.now()+'.txt'; fetch(u+'/storage/v1/object/wall-photos/'+n,{method:'POST',headers:{apikey:k,Authorization:'Bearer '+k,'Content-Type':'text/plain','x-upsert':'true'},body:'ok'}).then(async r=>{console.log('upload',r.status,await r.text()); const p=await fetch(u+'/storage/v1/object/public/wall-photos/'+n); console.log('public',p.status,await p.text())})"
 ```
 
-Expected: `200 []` for the posts query and a bucket list that includes
-`wall-photos`.
+Expected: `200 []` for the posts query, `upload 200` for the probe, and
+`public 200 ok` for the public read.
+
+The probe leaves a small `healthcheck-*.txt` object in the bucket; delete it
+from the Storage dashboard if you want a clean bucket. Do not verify the bucket
+with `GET /storage/v1/bucket`: that endpoint is service-role-only and returns
+`[]` for the publishable key even when the bucket exists.
 
 ## 5. Deployment
 
