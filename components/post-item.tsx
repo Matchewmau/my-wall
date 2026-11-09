@@ -3,11 +3,12 @@ import { timeAgo } from "@/lib/time";
 
 export function PostItem({ post, now }: { post: WallPost; now: number }) {
   return (
-    <article className="py-4">
+    <article className={`py-4 ${post.isStatic ? "" : "post-enter"}`}>
       <div className="flex items-baseline justify-between gap-3">
         <p className="font-semibold text-[#3b5998]">{post.author}</p>
         <time
           dateTime={post.created_at}
+          suppressHydrationWarning
           className="shrink-0 text-xs text-[#65676b]"
         >
           {timeAgo(post.created_at, now)}

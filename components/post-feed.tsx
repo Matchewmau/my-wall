@@ -18,7 +18,12 @@ export function PostFeed({
   loading?: boolean;
 }) {
   return (
-    <>
+    <section
+      id="wall-feed"
+      aria-label="Wall posts"
+      tabIndex={-1}
+      aria-busy={loading}
+    >
       {error ? (
         <Alert variant="destructive" className="mb-4">
           <AlertTitle>Couldn't load posts</AlertTitle>
@@ -36,20 +41,18 @@ export function PostFeed({
           ) : null}
         </Alert>
       ) : null}
-      <div aria-busy={loading}>
-        {loading ? <FeedSkeleton /> : null}
-        {posts.length === 0 ? (
-          <p className="py-8 text-center text-sm text-[#65676b]">
-            No posts yet. Be the first to share something.
-          </p>
-        ) : (
-          <div className="divide-y divide-[#dddfe2]">
-            {posts.map((post) => (
-              <PostItem key={post.id} post={post} now={now} />
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+      {loading ? <FeedSkeleton /> : null}
+      {posts.length === 0 ? (
+        <p className="py-8 text-center text-sm text-[#65676b]">
+          No posts yet. Be the first to share something.
+        </p>
+      ) : (
+        <div className="divide-y divide-[#dddfe2]">
+          {posts.map((post) => (
+            <PostItem key={post.id} post={post} now={now} />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

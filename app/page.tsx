@@ -40,6 +40,12 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-[#f0f2f5]">
+      <a
+        href="#wall-feed"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#3b5998] focus:shadow"
+      >
+        Skip to wall
+      </a>
       <WallHeader />
       <main className="mx-auto w-full max-w-[1100px] sm:mt-6 sm:px-4">
         <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">

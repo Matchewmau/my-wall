@@ -44,7 +44,7 @@ export function ProfileCard() {
         </dl>
       </div>
 
-      <ul className="mt-3 space-y-1 text-sm">
+      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
         <li>
           <a
             href={profile.links.github}
