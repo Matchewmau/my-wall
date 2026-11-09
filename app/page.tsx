@@ -1,11 +1,42 @@
+import { cookies } from "next/headers";
 import { ProfileCard } from "@/components/profile-card";
-import { PostFeed } from "@/components/post-feed";
+import { Wall } from "@/components/wall";
 import { WallHeader } from "@/components/wall-header";
+import { describeFeedError, mapPostRow } from "@/lib/posts";
+import { profile } from "@/lib/profile";
 import { getStaticPosts } from "@/lib/static-posts";
+import type { PostRow, WallPost } from "@/lib/types";
+import { isSupabaseConfigured } from "@/utils/supabase/config";
+import { createClient } from "@/utils/supabase/server";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
   const now = Date.now();
   const staticPosts = getStaticPosts(now);
+  let initialPosts: WallPost[] = [];
+  let initialError: string | null = null;
+
+  if (isSupabaseConfigured) {
+    try {
+      const cookieStore = await cookies();
+      const supabase = createClient(cookieStore);
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (error) {
+        initialError = describeFeedError(error.code);
+      } else {
+        initialPosts = ((data ?? []) as PostRow[]).map((row) =>
+          mapPostRow(row, profile.name),
+        );
+      }
+    } catch {
+      initialError = describeFeedError();
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#f0f2f5]">
@@ -17,10 +48,12 @@ export default function Home() {
               <ProfileCard />
             </aside>
             <section className="min-w-0 p-5 sm:p-6">
-              <div className="mb-4 rounded-lg border border-dashed border-[#ccd0d5] bg-[#f7f8fa] p-4 text-sm text-[#65676b]">
-                Composer arrives in a later task.
-              </div>
-              <PostFeed posts={staticPosts} now={now} />
+              <Wall
+                initialPosts={initialPosts}
+                staticPosts={staticPosts}
+                initialNow={now}
+                initialError={initialError}
+              />
             </section>
           </div>
         </div>
