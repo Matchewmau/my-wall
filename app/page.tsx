@@ -12,6 +12,10 @@ import { createClient } from "@/utils/supabase/server";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  // force-dynamic: each request renders a fresh wall, so reading the clock here
+  // is intentional even though the React purity rule cannot tell it apart from
+  // a client render.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const staticPosts = getStaticPosts(now);
   let initialPosts: WallPost[] = [];

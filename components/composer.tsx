@@ -28,14 +28,9 @@ export function Composer({ disabled, onShare }: ComposerProps) {
   const remaining = charactersRemaining(text);
 
   useEffect(() => {
-    if (!photo) {
-      setPreviewUrl(null);
-      return;
-    }
-    const url = URL.createObjectURL(photo);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
-  }, [photo]);
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -48,10 +43,12 @@ export function Composer({ disabled, onShare }: ComposerProps) {
     }
     setError(null);
     setPhoto(file);
+    setPreviewUrl(URL.createObjectURL(file));
   }
 
   function removePhoto() {
     setPhoto(null);
+    setPreviewUrl(null);
     setError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -65,6 +62,7 @@ export function Composer({ disabled, onShare }: ComposerProps) {
       await onShare({ body, photo });
       setText("");
       setPhoto(null);
+      setPreviewUrl(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (err) {
       setError(

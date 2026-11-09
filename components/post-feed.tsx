@@ -26,7 +26,7 @@ export function PostFeed({
     >
       {error ? (
         <Alert variant="destructive" className="mb-4">
-          <AlertTitle>Couldn't load posts</AlertTitle>
+          <AlertTitle>Couldn&apos;t load posts</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
           {onRetry ? (
             <Button
