@@ -58,6 +58,7 @@ export function Wall({
 }: WallProps) {
   const [livePosts, setLivePosts] = useState(initialPosts);
   const [error, setError] = useState(initialError);
+  const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(initialNow);
   const posts = useMemo(
     () => mergeWallPosts(livePosts, staticPosts),
@@ -100,20 +101,25 @@ export function Wall({
   async function retry() {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
-    const { data, error: fetchError } = await supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (fetchError) {
-      setError(describeFeedError(fetchError.code));
-      return;
+    setLoading(true);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (fetchError) {
+        setError(describeFeedError(fetchError.code));
+        return;
+      }
+      const fetched = ((data ?? []) as PostRow[]).map((row) =>
+        mapPostRow(row, profile.name),
+      );
+      setLivePosts((previous) => mergeLivePosts(fetched, previous));
+      setError(null);
+    } finally {
+      setLoading(false);
     }
-    const fetched = ((data ?? []) as PostRow[]).map((row) =>
-      mapPostRow(row, profile.name),
-    );
-    setLivePosts((previous) => mergeLivePosts(fetched, previous));
-    setError(null);
   }
 
   async function handleShare({ body, photo }: ShareInput) {
@@ -145,6 +151,7 @@ export function Wall({
         now={now}
         error={error}
         onRetry={() => void retry()}
+        loading={loading}
       />
     </>
   );

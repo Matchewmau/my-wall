@@ -1,5 +1,6 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { FeedSkeleton } from "./feed-skeleton";
 import { PostItem } from "./post-item";
 import type { WallPost } from "@/lib/types";
 
@@ -8,11 +9,13 @@ export function PostFeed({
   now,
   error,
   onRetry,
+  loading = false,
 }: {
   posts: WallPost[];
   now: number;
   error: string | null;
   onRetry: () => void;
+  loading?: boolean;
 }) {
   return (
     <>
@@ -33,17 +36,20 @@ export function PostFeed({
           ) : null}
         </Alert>
       ) : null}
-      {posts.length === 0 ? (
-        <p className="py-8 text-center text-sm text-[#65676b]">
-          No posts yet. Be the first to share something.
-        </p>
-      ) : (
-        <div className="divide-y divide-[#dddfe2]">
-          {posts.map((post) => (
-            <PostItem key={post.id} post={post} now={now} />
-          ))}
-        </div>
-      )}
+      <div aria-busy={loading}>
+        {loading ? <FeedSkeleton /> : null}
+        {posts.length === 0 ? (
+          <p className="py-8 text-center text-sm text-[#65676b]">
+            No posts yet. Be the first to share something.
+          </p>
+        ) : (
+          <div className="divide-y divide-[#dddfe2]">
+            {posts.map((post) => (
+              <PostItem key={post.id} post={post} now={now} />
+            ))}
+          </div>
+        )}
+      </div>
     </>
   );
 }
