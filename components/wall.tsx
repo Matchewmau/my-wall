@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Composer } from "@/components/composer";
 import { PostFeed } from "@/components/post-feed";
 import { SetupNotice } from "@/components/setup-notice";
@@ -13,8 +14,34 @@ import {
 } from "@/lib/posts";
 import { profile } from "@/lib/profile";
 import type { PostRow, ShareInput, WallPost } from "@/lib/types";
+import { photoExtension } from "@/lib/validation";
 import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 import { isSupabaseConfigured } from "@/utils/supabase/config";
+
+async function uploadPhoto(
+  supabase: SupabaseClient,
+  photo: File,
+): Promise<string> {
+  const extension = photoExtension(photo.type);
+  if (!extension) {
+    throw new Error("Choose a JPEG, PNG, WebP, or GIF image.");
+  }
+
+  const path = `photos/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+  const { error: uploadError } = await supabase.storage
+    .from("wall-photos")
+    .upload(path, photo, {
+      contentType: photo.type,
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (uploadError) {
+    throw new Error("Couldn't upload that photo. Please try again.");
+  }
+
+  return supabase.storage.from("wall-photos").getPublicUrl(path).data.publicUrl;
+}
 
 type WallProps = {
   initialPosts: WallPost[];
@@ -92,11 +119,12 @@ export function Wall({
   async function handleShare({ body, photo }: ShareInput) {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) throw new Error("Supabase isn't connected yet.");
-    if (photo) throw new Error("Photo upload isn't connected yet.");
+
+    const photoUrl = photo ? await uploadPhoto(supabase, photo) : null;
 
     const { data, error: insertError } = await supabase
       .from("posts")
-      .insert({ body: body || null, photo_url: null, user_id: null })
+      .insert({ body: body || null, photo_url: photoUrl, user_id: null })
       .select()
       .single();
 
